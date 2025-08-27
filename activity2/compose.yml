@@ -1,0 +1,47 @@
+name: monitoring
+
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100"
+    networks:
+      - monitoring
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '0.25'
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+    depends_on:
+      - node-exporter
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+
+networks:
+  monitoring:
+    driver: bridge
