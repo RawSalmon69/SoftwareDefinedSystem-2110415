@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  todo:
+    build: ../todo
+    image: "todo:release-2"
+    container_name: todo
+    ports:
+      - 8000:8000
+    environment:
+      REDIS_HOST: redis
+    networks:
+      - todo-net
+  webapp:
+    build: ../todo-webapp
+    image: "todo-webapp:release-1"
+    container_name: webapp
+    stdin_open: true
+    ports:
+      - 3000:3000
+  redis:
+    image: "redis"
+    container_name: redis
+    networks:
+      - todo-net
+
+networks:
+    todo-net: {}
